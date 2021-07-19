@@ -10,7 +10,7 @@ use ray::Ray;
 use vec3::{Color, Point3, Vec3};
 
 fn ray_color(ray: &Ray) -> Color {
-    if (hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray)) {
+    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
         return Color::new(1.0, 0.0, 0.0);
     }
 
@@ -27,7 +27,7 @@ fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> bool {
     let c = oc.dot(oc) - radius * radius;
     let discriminant = b * b - 4.0 * a * c;
 
-    return discriminant > 0.0;
+    discriminant > 0.0
 }
 
 fn main() -> std::io::Result<()> {
