@@ -5,6 +5,7 @@ mod ray;
 mod vec3;
 
 use std::io;
+use rayon::prelude::*;
 use ray::Ray;
 use vec3::{Color, Point3, Vec3};
 
@@ -76,10 +77,10 @@ fn main() -> std::io::Result<()> {
     eprintln!("ll_corner:  {:?}", lower_left_corner);
 
     let img: Vec<_> = (0..image_height)
+        .into_par_iter()
         .rev()
         .map(move |j| {
-            eprintln!("{:4} / {:4} lines remaining", j, image_height);
-            (0..image_width).map(move |i| {
+            (0..image_width).into_par_iter().map(move |i| {
                 let u = i as f64 / (image_width - 1) as f64;
                 let v = j as f64 / (image_height - 1) as f64;
 
