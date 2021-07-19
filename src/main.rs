@@ -1,3 +1,6 @@
+#![forbid(unsafe_code)]
+#![allow(dead_code)]
+
 mod image;
 mod ray;
 mod vec3;
