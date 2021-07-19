@@ -100,6 +100,14 @@ impl ops::SubAssign for Vec3 {
     }
 }
 
+impl ops::Mul<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn mul(self, rhs: Self::Output) -> Self::Output {
+        Vec3(rhs.0 * self, rhs.1 * self, rhs.2 * self)
+    }
+}
+
 impl ops::Mul<f64> for Vec3 {
     type Output = Self;
 

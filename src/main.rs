@@ -17,7 +17,7 @@ fn ray_color(ray: &Ray) -> Color {
     let unit_direction = ray.direction().unit();
     let t = 0.5 * (unit_direction.y() + 1.0);
 
-    Color::new(1.0, 1.0, 1.0) * (1.0 - t) + Color::new(0.5, 0.7, 1.0) * t
+    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
 fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> bool {
