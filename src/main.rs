@@ -7,7 +7,7 @@ mod ray;
 mod vec3;
 
 use cam::CameraBuilder;
-use hit::{Hittable, HittableList, Sphere};
+use hit::{Hittable, Sphere};
 use rand::prelude::*;
 use ray::Ray;
 use std::io;
@@ -45,7 +45,7 @@ pub fn to_ppm<W: io::Write>(
     Ok(())
 }
 
-fn ray_color<H: Hittable>(ray: &Ray, world: &HittableList<H>) -> Color {
+fn ray_color<H: Hittable>(ray: &Ray, world: H) -> Color {
     let hr = world.hit(&ray, 0.0, f64::INFINITY);
 
     if let Some(hr) = hr {
@@ -79,7 +79,7 @@ fn main() -> std::io::Result<()> {
     let samples_per_pixel = 100;
 
     // world
-    let mut world = HittableList::new();
+    let mut world = Vec::new();
     world.push(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5));
     world.push(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0));
 
@@ -102,7 +102,7 @@ fn main() -> std::io::Result<()> {
                     let v = (j as f64 + rng.gen_range(0.0..1.0)) / (image_height - 1) as f64;
 
                     let ray = camera.get_ray(u, v);
-                    color += ray_color(&ray, &world);
+                    color += ray_color(&ray, &world[..]);
                 }
 
                 color
