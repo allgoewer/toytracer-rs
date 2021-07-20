@@ -61,27 +61,27 @@ impl Default for CameraBuilder {
 }
 
 impl CameraBuilder {
-    pub fn aspect_ratio(mut self, aspect_ratio: f64) -> Self {
+    pub fn aspect_ratio(&mut self, aspect_ratio: f64) -> &mut Self {
         self.aspect_ratio = aspect_ratio;
         self
     }
 
-    pub fn viewport_height(mut self, viewport_height: f64) -> Self {
+    pub fn viewport_height(&mut self, viewport_height: f64) -> &mut Self {
         self.viewport_height = viewport_height;
         self
     }
 
-    pub fn focal_length(mut self, focal_length: f64) -> Self {
+    pub fn focal_length(&mut self, focal_length: f64) -> &mut Self {
         self.focal_length = focal_length;
         self
     }
 
-    pub fn origin(mut self, origin: Point3) -> Self {
+    pub fn origin(&mut self, origin: Point3) -> &mut Self {
         self.origin = origin;
         self
     }
 
-    pub fn build(self) -> Camera {
+    pub fn build(&self) -> Camera {
         let viewport_width = self.aspect_ratio * self.viewport_height;
         let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
         let vertical = Vec3::new(0.0, self.viewport_height, 0.0);
