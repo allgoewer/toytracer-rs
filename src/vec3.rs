@@ -49,6 +49,13 @@ impl Vec3 {
         }
     }
 
+    /// Generate the unit vector of a random 3-dimensional vector which is inside the unit sphere
+    ///
+    /// Note that this function calls [`Self::random_in_unit_sphere()`]
+    pub fn random_unit_vector() -> Self {
+        Self::random_in_unit_sphere().unit()
+    }
+
     /// Write the vector to a [`io::Write`]r
     pub fn write<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         writeln!(w, "{} {} {}", self.0, self.1, self.2)
