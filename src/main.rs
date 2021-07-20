@@ -1,10 +1,12 @@
 #![forbid(unsafe_code)]
 #![allow(dead_code)]
 
+mod hit;
 mod ray;
 mod vec3;
 
 use std::io;
+use hit::{Hittable, HittableList, Sphere};
 use ray::Ray;
 use vec3::{Color, Point3, Vec3};
 
@@ -31,25 +33,30 @@ pub fn to_ppm<W: io::Write>(
     Ok(())
 }
 
-fn ray_color(ray: &Ray) -> Color {
-    if hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray) {
-        return Color::new(1.0, 0.0, 0.0);
+fn ray_color<H: Hittable>(ray: &Ray, world: &HittableList<H>) -> Color {
+    let hr = world.hit(&ray, 0.0, f64::INFINITY);
+
+    if let Some(hr) = hr {
+        0.5 * (hr.normal() + Color::new(1.0, 1.0, 1.0))
+    } else {
+        let unit_direction = ray.direction().unit();
+        let t = 0.5 * (unit_direction.y() + 1.0);
+        (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
     }
-
-    let unit_direction = ray.direction().unit();
-    let t = 0.5 * (unit_direction.y() + 1.0);
-
-    (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
-fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> bool {
+fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> f64 {
     let oc = ray.origin() - center;
-    let a = ray.direction().dot(ray.direction());
-    let b = 2.0 * oc.dot(ray.direction());
-    let c = oc.dot(oc) - radius * radius;
-    let discriminant = b * b - 4.0 * a * c;
+    let a = ray.direction().length_squared();
+    let half_b = oc.dot(ray.direction());
+    let c = oc.length_squared() - radius * radius;
+    let discriminant = half_b * half_b - a * c;
 
-    discriminant > 0.0
+    if discriminant < 0.0 {
+        -1.0
+    } else {
+        (-half_b - discriminant.sqrt()) / a
+    }
 }
 
 fn main() -> std::io::Result<()> {
@@ -57,6 +64,11 @@ fn main() -> std::io::Result<()> {
     let aspect_ratio = 16.0 / 9.0;
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as usize;
+
+    // world
+    let mut world = HittableList::new();
+    world.push(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5));
+    world.push(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0));
 
     // camera
     let viewport_height = 2.0;
@@ -75,6 +87,7 @@ fn main() -> std::io::Result<()> {
     eprintln!("vertical:   {:?}", vertical);
     eprintln!("ll_corner:  {:?}", lower_left_corner);
 
+    let world = &world;
     let img: Vec<_> = (0..image_height)
         .rev()
         .map(move |j| {
@@ -88,7 +101,7 @@ fn main() -> std::io::Result<()> {
                     lower_left_corner + horizontal * u + vertical * v - origin,
                 );
 
-                ray_color(&ray)
+                ray_color(&ray, &world)
             })
         })
         .flatten()
