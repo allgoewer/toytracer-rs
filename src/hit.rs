@@ -30,6 +30,33 @@ impl HitRecord {
     }
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub struct HittableList<H>(Vec<H>);
+
+impl<H: Hittable> HittableList<H> {
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    pub fn push(&mut self, h: H) {
+        self.0.push(h);
+    }
+
+    pub fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+        let mut latest_hit = None;
+        let mut closest_so_far = t_max;
+
+        for hittable in &self.0 {
+            if let Some(hr) = hittable.hit(ray, t_min, closest_so_far) {
+                closest_so_far = hr.t();
+                latest_hit = Some(hr);
+            }
+        }
+
+        latest_hit
+    }
+}
+
 pub trait Hittable {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
