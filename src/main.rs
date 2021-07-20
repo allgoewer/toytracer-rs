@@ -50,7 +50,7 @@ fn ray_color<H: Hittable>(ray: &Ray, world: H, depth: u32) -> Color {
         return Color::new(0.0, 0.0, 0.0);
     }
 
-    let hr = world.hit(&ray, 0.0, f64::INFINITY);
+    let hr = world.hit(&ray, 0.001, f64::INFINITY);
 
     if let Some(hr) = hr {
         let point = hr.point();
