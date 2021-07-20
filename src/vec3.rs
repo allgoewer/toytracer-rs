@@ -62,7 +62,7 @@ impl Vec3 {
         )
     }
 
-    /// Calaculate the unit-vector of self
+    /// Calculate the unit-vector of self
     pub fn unit(self) -> Self {
         self / self.length()
     }

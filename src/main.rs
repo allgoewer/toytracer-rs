@@ -78,7 +78,7 @@ fn main() -> std::io::Result<()> {
     let img: Vec<_> = (0..image_height)
         .rev()
         .map(move |j| {
-            eprintln!("{:4} / {:4} lines remaining", j, image_height);
+            eprintln!("{:4} / {:4} lines remaining", j + 1, image_height);
             (0..image_width).map(move |i| {
                 let u = i as f64 / (image_width - 1) as f64;
                 let v = j as f64 / (image_height - 1) as f64;
