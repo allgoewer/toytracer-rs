@@ -45,7 +45,11 @@ pub fn to_ppm<W: io::Write>(
     Ok(())
 }
 
-fn ray_color<H: Hittable>(ray: &Ray, world: H) -> Color {
+fn ray_color<H: Hittable>(ray: &Ray, world: H, depth: u32) -> Color {
+    if depth == 0 {
+        return Color::new(0.0, 0.0, 0.0);
+    }
+
     let hr = world.hit(&ray, 0.0, f64::INFINITY);
 
     if let Some(hr) = hr {
@@ -80,6 +84,7 @@ fn main() -> std::io::Result<()> {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as usize;
     let samples_per_pixel = 100;
+    let max_depth = 50;
 
     // world
     let mut world = Vec::new();
@@ -105,7 +110,7 @@ fn main() -> std::io::Result<()> {
                     let v = (j as f64 + rng.gen_range(0.0..1.0)) / (image_height - 1) as f64;
 
                     let ray = camera.get_ray(u, v);
-                    color += ray_color(&ray, &world[..]);
+                    color += ray_color(&ray, &world[..], max_depth);
                 }
 
                 color
