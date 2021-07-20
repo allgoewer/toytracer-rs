@@ -89,7 +89,9 @@ fn main() -> std::io::Result<()> {
     world.push(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0));
 
     // camera
-    let camera = &CameraBuilder::default().build();
+    let camera = &CameraBuilder::default()
+        .aspect_ratio(aspect_ratio)
+        .build();
 
     eprintln!("camera:     {:?}", camera);
 
