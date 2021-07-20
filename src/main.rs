@@ -6,7 +6,7 @@ mod ray;
 mod vec3;
 
 use std::io;
-use hit::{HitRecord, Hittable, Sphere};
+use hit::{Hittable, HittableList, Sphere};
 use ray::Ray;
 use vec3::{Color, Point3, Vec3};
 
@@ -33,15 +33,14 @@ pub fn to_ppm<W: io::Write>(
     Ok(())
 }
 
-fn ray_color(ray: &Ray) -> Color {
-    let hr = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5).hit(&ray, 0.0, 100.0);
+fn ray_color<H: Hittable>(ray: &Ray, world: &HittableList<H>) -> Color {
+    let hr = world.hit(&ray, 0.0, f64::INFINITY);
+
     if let Some(hr) = hr {
-        let n = hr.normal();
-        0.5 * Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0)
+        0.5 * (hr.normal() + Color::new(1.0, 1.0, 1.0))
     } else {
         let unit_direction = ray.direction().unit();
         let t = 0.5 * (unit_direction.y() + 1.0);
-
         (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
     }
 }
@@ -66,6 +65,11 @@ fn main() -> std::io::Result<()> {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as usize;
 
+    // world
+    let mut world = HittableList::new();
+    world.push(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5));
+    world.push(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0));
+
     // camera
     let viewport_height = 2.0;
     let viewport_width = viewport_height * aspect_ratio;
@@ -83,6 +87,7 @@ fn main() -> std::io::Result<()> {
     eprintln!("vertical:   {:?}", vertical);
     eprintln!("ll_corner:  {:?}", lower_left_corner);
 
+    let world = &world;
     let img: Vec<_> = (0..image_height)
         .rev()
         .map(move |j| {
@@ -96,7 +101,7 @@ fn main() -> std::io::Result<()> {
                     lower_left_corner + horizontal * u + vertical * v - origin,
                 );
 
-                ray_color(&ray)
+                ray_color(&ray, &world)
             })
         })
         .flatten()
