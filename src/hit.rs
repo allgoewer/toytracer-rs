@@ -1,5 +1,5 @@
-use crate::vec3::{Point3, Vec3};
 use crate::ray::Ray;
+use crate::vec3::{Point3, Vec3};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct HitRecord {
@@ -12,7 +12,11 @@ pub struct HitRecord {
 impl HitRecord {
     pub fn face_normal(ray: &Ray, outward_normal: Vec3) -> (bool, Vec3) {
         let front_face = ray.direction().dot(outward_normal) < 0.0;
-        let normal = if front_face { outward_normal } else { -outward_normal };
+        let normal = if front_face {
+            outward_normal
+        } else {
+            -outward_normal
+        };
 
         (front_face, normal)
     }
@@ -69,17 +73,14 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new(center: Point3, radius: f64) -> Self {
-        Self {
-            center,
-            radius,
-        }
+        Self { center, radius }
     }
 }
 
 impl Hittable for Sphere {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = ray.origin() - self.center;
-        let a = ray.direction().length_squared();        
+        let a = ray.direction().length_squared();
         let half_b = oc.dot(ray.direction());
         let c = oc.length_squared() - self.radius * self.radius;
 
@@ -102,8 +103,7 @@ impl Hittable for Sphere {
         let t = root;
         let point = ray.at(t);
 
-        let (front_face, normal) = HitRecord::face_normal(ray,
-            (point - self.center) / self.radius);
+        let (front_face, normal) = HitRecord::face_normal(ray, (point - self.center) / self.radius);
 
         Some(HitRecord {
             point,
