@@ -1,10 +1,12 @@
 #![forbid(unsafe_code)]
 #![allow(dead_code)]
 
+mod hit;
 mod ray;
 mod vec3;
 
 use std::io;
+use hit::{HitRecord, Hittable, Sphere};
 use ray::Ray;
 use vec3::{Color, Point3, Vec3};
 
@@ -32,10 +34,9 @@ pub fn to_ppm<W: io::Write>(
 }
 
 fn ray_color(ray: &Ray) -> Color {
-    let t = hit_sphere(Point3::new(0.0, 0.0, -1.0), 0.5, ray);
-
-    if t > 0.0 {
-        let n = (ray.at(t) - Vec3::new(0.0, 0.0, -1.0)).unit();
+    let hr = Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5).hit(&ray, 0.0, 100.0);
+    if let Some(hr) = hr {
+        let n = hr.normal();
         0.5 * Color::new(n.x() + 1.0, n.y() + 1.0, n.z() + 1.0)
     } else {
         let unit_direction = ray.direction().unit();
