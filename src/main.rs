@@ -29,10 +29,10 @@ pub fn to_ppm<W: io::Write>(
     for color in values {
         let (r, g, b) = color.xyz();
 
-        // scale and clamp the rgb values
-        let r = (r * scale).clamp(0.0, 0.999);
-        let g = (g * scale).clamp(0.0, 0.999);
-        let b = (b * scale).clamp(0.0, 0.999);
+        // gamma-correct for gamma = 2.0, scale and clamp the rgb values
+        let r = (r * scale).sqrt().clamp(0.0, 0.999);
+        let g = (g * scale).sqrt().clamp(0.0, 0.999);
+        let b = (b * scale).sqrt().clamp(0.0, 0.999);
 
         // convert rgb to u8
         let r = (r * 255.999) as u8;
@@ -45,11 +45,18 @@ pub fn to_ppm<W: io::Write>(
     Ok(())
 }
 
-fn ray_color<H: Hittable>(ray: &Ray, world: H) -> Color {
-    let hr = world.hit(&ray, 0.0, f64::INFINITY);
+fn ray_color<H: Hittable>(ray: &Ray, world: H, depth: u32) -> Color {
+    if depth == 0 {
+        return Color::new(0.0, 0.0, 0.0);
+    }
+
+    let hr = world.hit(&ray, 0.001, f64::INFINITY);
 
     if let Some(hr) = hr {
-        0.5 * (hr.normal() + Color::new(1.0, 1.0, 1.0))
+        let point = hr.point();
+        let target = point + hr.normal() + Vec3::random_unit_vector();
+
+        0.5 * ray_color(&Ray::new(point, target - point), world, depth - 1)
     } else {
         let unit_direction = ray.direction().unit();
         let t = 0.5 * (unit_direction.y() + 1.0);
@@ -77,6 +84,7 @@ fn main() -> std::io::Result<()> {
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as usize;
     let samples_per_pixel = 100;
+    let max_depth = 50;
 
     // world
     let mut world = Vec::new();
@@ -102,7 +110,7 @@ fn main() -> std::io::Result<()> {
                     let v = (j as f64 + rng.gen_range(0.0..1.0)) / (image_height - 1) as f64;
 
                     let ray = camera.get_ray(u, v);
-                    color += ray_color(&ray, &world[..]);
+                    color += ray_color(&ray, &world[..], max_depth);
                 }
 
                 color
