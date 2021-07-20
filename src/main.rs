@@ -6,11 +6,14 @@ mod hit;
 mod ray;
 mod vec3;
 
+use rayon::prelude::*;
 use cam::CameraBuilder;
 use hit::{Hittable, Sphere};
 use rand::prelude::*;
 use ray::Ray;
 use std::io;
+use std::thread;
+use std::sync::{self, atomic};
 use vec3::{Color, Point3, Vec3};
 
 pub fn to_ppm<W: io::Write>(
@@ -93,14 +96,34 @@ fn main() -> std::io::Result<()> {
         .aspect_ratio(aspect_ratio)
         .build();
 
-    eprintln!("camera:     {:?}", camera);
+    eprintln!("{:#?}", camera);
+
+    // counter
+    let counter = sync::Arc::new(atomic::AtomicI32::new(image_height as i32));
+    let join_handle = thread::spawn({
+        let counter = counter.clone();
+        move || {
+            loop {
+                let count = counter.load(atomic::Ordering::Relaxed);
+                eprintln!("{:4} lines remaining", count);
+
+                if count <= 0 {
+                    break;
+                }
+
+                thread::sleep(std::time::Duration::from_millis(1_000));
+            }
+        }
+    });
 
     let world = &world;
     let img: Vec<_> = (0..image_height)
+        .into_par_iter()
         .rev()
         .map(move |j| {
-            eprintln!("{:4} / {:4} lines remaining", j + 1, image_height);
-            (0..image_width).map(move |i| {
+            //eprintln!("{:4} / {:4} lines remaining", j + 1, image_height);
+            counter.fetch_sub(1, atomic::Ordering::Relaxed);
+            (0..image_width).into_par_iter().map(move |i| {
                 let mut color = Color::new(0.0, 0.0, 0.0);
                 let mut rng = thread_rng();
 
@@ -117,6 +140,10 @@ fn main() -> std::io::Result<()> {
         })
         .flatten()
         .collect();
+
+    join_handle.join().expect("Failed to join status thread");
+
+    eprintln!("Outputting ppm image to stdout..");
 
     let stdout = std::io::stdout();
     to_ppm(
