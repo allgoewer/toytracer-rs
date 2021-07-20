@@ -29,10 +29,10 @@ pub fn to_ppm<W: io::Write>(
     for color in values {
         let (r, g, b) = color.xyz();
 
-        // scale and clamp the rgb values
-        let r = (r * scale).clamp(0.0, 0.999);
-        let g = (g * scale).clamp(0.0, 0.999);
-        let b = (b * scale).clamp(0.0, 0.999);
+        // gamma-correct for gamma = 2.0, scale and clamp the rgb values
+        let r = (r * scale).sqrt().clamp(0.0, 0.999);
+        let g = (g * scale).sqrt().clamp(0.0, 0.999);
+        let b = (b * scale).sqrt().clamp(0.0, 0.999);
 
         // convert rgb to u8
         let r = (r * 255.999) as u8;
