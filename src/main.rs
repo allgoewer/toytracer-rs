@@ -49,7 +49,10 @@ fn ray_color<H: Hittable>(ray: &Ray, world: H) -> Color {
     let hr = world.hit(&ray, 0.0, f64::INFINITY);
 
     if let Some(hr) = hr {
-        0.5 * (hr.normal() + Color::new(1.0, 1.0, 1.0))
+        let point = hr.point();
+        let target = point + hr.normal() + Vec3::random_in_unit_sphere();
+
+        0.5 * ray_color(&Ray::new(point, target - point), world, depth - 1)
     } else {
         let unit_direction = ray.direction().unit();
         let t = 0.5 * (unit_direction.y() + 1.0);

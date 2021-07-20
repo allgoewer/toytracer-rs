@@ -1,3 +1,4 @@
+use rand::prelude::*;
 use std::io;
 use std::ops;
 
@@ -11,6 +12,41 @@ impl Vec3 {
     /// Create a new 3-dimensional vector
     pub fn new(x: f64, y: f64, z: f64) -> Self {
         Self(x, y, z)
+    }
+
+    /// Generate a random 3-dimensional vector in [0..1), [0..1), [0..1)
+    pub fn random() -> Self {
+        let mut rng = thread_rng();
+
+        Self(
+            rng.gen_range(0.0..1.0),
+            rng.gen_range(0.0..1.0),
+            rng.gen_range(0.0..1.0),
+        )
+    }
+
+    /// Generate a random 3-dimensional vector in [range), [range), [range)
+    pub fn random_range(range: ops::Range<f64>) -> Self {
+        let mut rng = thread_rng();
+
+        Self(
+            rng.gen_range(range.clone()),
+            rng.gen_range(range.clone()),
+            rng.gen_range(range),
+        )
+    }
+
+    /// Generate a random 3-dimensional vector which is inside the unit sphere
+    ///
+    /// Note that this functions loops until a random vector inside the unit
+    /// sphere has been found.
+    pub fn random_in_unit_sphere() -> Self {
+        loop {
+            let p = Self::random_range(-1.0..1.0);
+            if p.length_squared() < 1.0 {
+                break p;
+            }
+        }
     }
 
     /// Write the vector to a [`io::Write`]r
