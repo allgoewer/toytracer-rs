@@ -97,9 +97,12 @@ fn main() -> std::io::Result<()> {
         .build();
 
     eprintln!("{:#?}", camera);
+    eprintln!("Using {} raytracing threads", rayon::current_num_threads());
 
     // counter
     let counter = sync::Arc::new(atomic::AtomicI32::new(image_height as i32));
+
+    // status thread, prints number of remaining lines to be calculated
     let join_handle = thread::spawn({
         let counter = counter.clone();
         move || {
@@ -121,7 +124,6 @@ fn main() -> std::io::Result<()> {
         .into_par_iter()
         .rev()
         .map(move |j| {
-            //eprintln!("{:4} / {:4} lines remaining", j + 1, image_height);
             counter.fetch_sub(1, atomic::Ordering::Relaxed);
             (0..image_width).into_par_iter().map(move |i| {
                 let mut color = Color::new(0.0, 0.0, 0.0);
