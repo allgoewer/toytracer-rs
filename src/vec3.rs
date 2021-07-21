@@ -56,6 +56,21 @@ impl Vec3 {
         Self::random_in_unit_sphere().unit()
     }
 
+    /// Generate a random vector inside the unit disk
+    ///
+    /// Note that this functino loops until a random vector inside the unit
+    /// disk has been found.
+    pub fn random_in_unit_disk() -> Self {
+        let mut rng = thread_rng();
+
+        loop {
+            let p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+            if p.length_squared() < 1.0 {
+                break p;
+            }
+        }
+    }
+
     /// Calculates whether self is near zero
     pub fn near_zero(&self) -> bool {
         let s = 1e-8;
