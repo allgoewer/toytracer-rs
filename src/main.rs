@@ -93,9 +93,9 @@ fn main() -> std::io::Result<()> {
     // world
 
     let mat_ground = Lambertian::new(Color::new(0.8, 0.8, 0.0));
-    let mat_center = Dielectric::new(1.5);
+    let mat_center = Lambertian::new(Color::new(0.1, 0.2, 0.5));
     let mat_left = Dielectric::new(1.5);
-    let mat_right = Metal::new(Color::new(0.8, 0.6, 0.2), 1.0);
+    let mat_right = Metal::new(Color::new(0.8, 0.6, 0.2), 0.0);
 
     let world = vec![
         Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, mat_ground),
