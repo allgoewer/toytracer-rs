@@ -91,9 +91,17 @@ fn main() -> std::io::Result<()> {
     let max_depth = 50;
 
     // world
+
+    let mat_ground = Lambertian::new(Color::new(0.8, 0.8, 0.0));
+    let mat_center = Lambertian::new(Color::new(0.7, 0.3, 0.3));
+    let mat_left = Metal::new(Color::new(0.8, 0.8, 0.8));
+    let mat_right = Metal::new(Color::new(0.8, 0.6, 0.2));
+
     let world = vec![
-        Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5),
-        Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0),
+        Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, mat_ground),
+        Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center),
+        Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, mat_left),
+        Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, mat_right),
     ];
 
     // camera
