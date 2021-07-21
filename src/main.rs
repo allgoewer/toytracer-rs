@@ -87,9 +87,10 @@ fn main() -> std::io::Result<()> {
     let max_depth = 50;
 
     // world
-    let mut world = Vec::new();
-    world.push(Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5));
-    world.push(Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0));
+    let world = vec![
+        Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5),
+        Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0),
+    ];
 
     // camera
     let camera = &CameraBuilder::default()
