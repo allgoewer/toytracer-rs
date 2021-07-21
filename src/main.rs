@@ -3,18 +3,20 @@
 
 mod cam;
 mod hit;
+mod material;
 mod ray;
 mod vec3;
 
 use rayon::prelude::*;
 use cam::CameraBuilder;
 use hit::{Hittable, Sphere};
+use material::{Lambertian, Metal};
 use rand::prelude::*;
 use ray::Ray;
 use std::io;
 use std::thread;
 use std::sync::{self, atomic};
-use vec3::{Color, Point3, Vec3};
+use vec3::{Color, Point3};
 
 pub fn to_ppm<W: io::Write>(
     w: &mut W,
@@ -54,9 +56,11 @@ fn ray_color<H: Hittable>(ray: &Ray, world: H, depth: u32) -> Color {
     }
 
     if let Some(hr) = world.hit(&ray, 0.001, f64::INFINITY) {
-        let point = hr.point();
-        let target = point + hr.normal() + Vec3::random_unit_vector();
-        0.5 * ray_color(&Ray::new(point, target - point), world, depth - 1)
+        if let Some(scatter) = hr.mat().scatter(ray, &hr) {
+            scatter.attenuation() * ray_color(scatter.scattered(), world, depth - 1)
+        } else {
+            Color::new(0.0, 0.0, 0.0)
+        }
     } else {
         let unit_direction = ray.direction().unit();
         let t = 0.5 * (unit_direction.y() + 1.0);

@@ -52,3 +52,32 @@ impl Material for Lambertian {
         })
     }
 }
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct Metal {
+    albedo: Color,
+}
+
+impl Metal {
+    pub fn new(albedo: Color, fuzz: f64) -> Self {
+        Self {
+            albedo,
+        }
+    }
+}
+
+impl Material for Metal {
+    fn scatter(&self, ray: &Ray, hr: &HitRecord) -> Option<Scatter> {
+        let reflected = ray.direction().unit().reflect(hr.normal());
+        let scattered = Ray::new(hr.point(), reflected);
+
+        if scattered.direction().dot(hr.normal()) <= 0.0 {
+            None
+        } else {
+            Some(Scatter {
+                attenuation: self.albedo,
+                scattered,
+            })
+        }
+    }
+}
