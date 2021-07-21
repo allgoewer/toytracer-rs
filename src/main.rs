@@ -14,7 +14,7 @@ use rand::prelude::*;
 use ray::Ray;
 use rayon::prelude::*;
 use std::io;
-use std::sync::{self, atomic};
+use std::sync::{self, atomic, Arc};
 use std::thread;
 use vec3::{Color, Point3, Vec3};
 
@@ -83,40 +83,77 @@ fn hit_sphere(center: Point3, radius: f64, ray: &Ray) -> f64 {
 }
 
 fn main() -> std::io::Result<()> {
+    let mut rng = thread_rng();
+
     // image
-    let aspect_ratio = 16.0 / 9.0;
+    let aspect_ratio = 3.0 / 2.0;
     let image_width = 400;
     let image_height = (image_width as f64 / aspect_ratio) as usize;
     let samples_per_pixel = 100;
     let max_depth = 50;
 
-    // world
+    // generate a random world
 
-    let material_ground = &Lambertian::new(Color::new(0.8, 0.8, 0.0));
-    let material_center = &Lambertian::new(Color::new(0.1, 0.2, 0.5));
-    let material_left = &Dielectric::new(1.5);
-    let material_right = &Metal::new(Color::new(0.8, 0.6, 0.2), 0.0);
+    let material_ground = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
 
-    let world = vec![
-        Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, material_ground),
-        Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, material_center),
-        Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, material_left),
-        Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.45, material_left),
-        Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, material_right),
-    ];
+    let mut world = vec![Sphere::new(
+        Point3::new(0.0, -1000.0, 0.0),
+        1000.0,
+        material_ground,
+    )];
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let choose_mat = rng.gen_range(0.0..1.0);
+
+            let center = Point3::new(
+                a as f64 + 0.9 * rng.gen_range(0.0..1.0),
+                0.2,
+                b as f64 + 0.9 * rng.gen_range(0.0..1.0),
+            );
+
+            if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                match choose_mat {
+                    _ if choose_mat < 0.8 => {
+                        // diffuse
+                        let albedo = Color::random() * Color::random();
+                        let material = Arc::new(Lambertian::new(albedo));
+                        world.push(Sphere::new(center, 0.2, material));
+                    }
+                    _ if choose_mat < 0.95 => {
+                        // metal
+                        let albedo = Color::random_range(0.5..1.0);
+                        let fuzz = rng.gen_range(0.0..0.5);
+                        let material = Arc::new(Metal::new(albedo, fuzz));
+                        world.push(Sphere::new(center, 0.2, material));
+                    }
+                    _ => {
+                        // glass
+                        let material = Arc::new(Dielectric::new(1.5));
+                        world.push(Sphere::new(center, 0.2, material));
+                    }
+                }
+            }
+        }
+    }
+
+    let material1 = Arc::new(Dielectric::new(1.5));
+    let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+
+    world.push(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1));
+    world.push(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2));
+    world.push(Sphere::new(Point3::new(4.0, 1.0, 0.0), 1.0, material3));
 
     // camera
-    let look_from = Point3::new(3.0, 3.0, 2.0);
-    let look_at = Point3::new(0.0, 0.0, -1.0);
-
     let camera = &CameraBuilder::default()
-        .look_from(look_from)
-        .look_at(look_at)
+        .look_from(Point3::new(13.0, 2.0, 3.0))
+        .look_at(Point3::new(0.0, 0.0, 0.0))
         .view_up(Vec3::new(0.0, 1.0, 0.0))
         .vertical_fov(20.0)
         .aspect_ratio(aspect_ratio)
-        .aperture(2.0)
-        .focus_dist((look_from - look_at).length())
+        .aperture(0.1)
+        .focus_dist(10.0)
         .build();
 
     eprintln!("{:#?}", camera);
