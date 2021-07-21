@@ -54,7 +54,7 @@ fn ray_color<H: Hittable>(ray: &Ray, world: H, depth: u32) -> Color {
 
     if let Some(hr) = hr {
         let point = hr.point();
-        let target = point + hr.normal() + Vec3::random_unit_vector();
+        let target = point + Vec3::random_in_hemisphere(hr.normal());
 
         0.5 * ray_color(&Ray::new(point, target - point), world, depth - 1)
     } else {
