@@ -22,8 +22,9 @@ impl Camera {
 pub struct CameraBuilder {
     vfov: f64,
     aspect_ratio: f64,
-    focal_length: f64,
-    origin: Point3,
+    look_from: Point3,
+    look_at: Point3,
+    vup: Vec3,
 }
 
 impl Default for CameraBuilder {
@@ -31,30 +32,36 @@ impl Default for CameraBuilder {
         Self {
             vfov: 90.0,
             aspect_ratio: 16.0 / 9.0,
-            focal_length: 1.0,
-            origin: Point3::new(0.0, 0.0, 0.0),
+            look_from: Point3::new(0.0, 0.0, 0.0),
+            look_at: Point3::new(0.0, 0.0, 1.0),
+            vup: Point3::new(0.0, 1.0, 0.0),
         }
     }
 }
 
 impl CameraBuilder {
-    pub fn aspect_ratio(&mut self, aspect_ratio: f64) -> &mut Self {
-        self.aspect_ratio = aspect_ratio;
-        self
-    }
-
     pub fn vertical_fov(&mut self, vfov: f64) -> &mut Self {
         self.vfov = vfov;
         self
     }
 
-    pub fn focal_length(&mut self, focal_length: f64) -> &mut Self {
-        self.focal_length = focal_length;
+    pub fn aspect_ratio(&mut self, aspect_ratio: f64) -> &mut Self {
+        self.aspect_ratio = aspect_ratio;
         self
     }
 
-    pub fn origin(&mut self, origin: Point3) -> &mut Self {
-        self.origin = origin;
+    pub fn look_from(&mut self, look_from: Point3) -> &mut Self {
+        self.look_from = look_from;
+        self
+    }
+
+    pub fn look_at(&mut self, look_at: Point3) -> &mut Self {
+        self.look_at = look_at;
+        self
+    }
+
+    pub fn view_up(&mut self, view_up: Vec3) -> &mut Self {
+        self.vup = view_up;
         self
     }
 
@@ -64,17 +71,19 @@ impl CameraBuilder {
 
         let viewport_height = 2.0 * h;
         let viewport_width = self.aspect_ratio * viewport_height;
-        let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-        let vertical = Vec3::new(0.0, viewport_height, 0.0);
+
+        let w = (self.look_from - self.look_at).unit();
+        let u = self.vup.cross(w).unit();
+        let v = w.cross(u);
+
+        let horizontal = viewport_width * u;
+        let vertical = viewport_height * v;
 
         Camera {
-            origin: self.origin,
+            origin: self.look_from,
             horizontal,
             vertical,
-            lower_left_corner: self.origin
-                - horizontal / 2.0
-                - vertical / 2.0
-                - Vec3::new(0.0, 0.0, self.focal_length),
+            lower_left_corner: self.look_from - horizontal / 2.0 - vertical / 2.0 - w,
         }
     }
 }

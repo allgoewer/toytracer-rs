@@ -16,7 +16,7 @@ use rayon::prelude::*;
 use std::io;
 use std::sync::{self, atomic};
 use std::thread;
-use vec3::{Color, Point3};
+use vec3::{Color, Point3, Vec3};
 
 pub fn to_ppm<W: io::Write>(
     w: &mut W,
@@ -93,16 +93,27 @@ fn main() -> std::io::Result<()> {
 
     // world
 
-    let mat_left = Lambertian::new(Color::new(0.0, 0.0, 1.0));
-    let mat_right = Lambertian::new(Color::new(1.0, 0.0, 0.0));
+    let material_ground = Lambertian::new(Color::new(0.8, 0.8, 0.0));
+    let material_center = Lambertian::new(Color::new(0.1, 0.2, 0.5));
+    let material_left = Dielectric::new(1.5);
+    let material_right = Metal::new(Color::new(0.8, 0.6, 0.2), 0.0);
 
     let world = vec![
-        Sphere::new(Point3::new(-radius, 0.0, -1.0), radius, mat_left),
-        Sphere::new(Point3::new(radius, 0.0, -1.0), radius, mat_right),
+        Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, material_ground),
+        Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, material_center),
+        Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, material_left.clone()),
+        Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.45, material_left),
+        Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, material_right),
     ];
 
     // camera
-    let camera = &CameraBuilder::default().vertical_fov(90.0).aspect_ratio(aspect_ratio).build();
+    let camera = &CameraBuilder::default()
+        .look_from(Point3::new(-2.0, 2.0, 1.0))
+        .look_at(Point3::new(0.0, 0.0, -1.0))
+        .view_up(Vec3::new(0.0, 1.0, 0.0))
+        .vertical_fov(20.0)
+        .aspect_ratio(aspect_ratio)
+        .build();
 
     eprintln!("{:#?}", camera);
     eprintln!("Using {} raytracing threads", rayon::current_num_threads());
