@@ -56,16 +56,6 @@ impl Vec3 {
         Self::random_in_unit_sphere().unit()
     }
 
-    /// Note that this function calls [`Self::random_in_unit_sphere()`]
-    pub fn random_in_hemisphere(normal: Vec3) -> Self {
-        let in_unit_sphere = Self::random_in_unit_sphere();
-        if in_unit_sphere.dot(normal) > 0.0 {
-            in_unit_sphere
-        } else {
-            -in_unit_sphere
-        }
-    }
-
     /// Write the vector to a [`io::Write`]r
     pub fn write<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         writeln!(w, "{} {} {}", self.0, self.1, self.2)
