@@ -1,6 +1,6 @@
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
-use crate::material::Material;
 use std::sync::Arc;
 
 #[derive(Clone, Debug)]
@@ -74,7 +74,11 @@ pub struct Sphere {
 
 impl Sphere {
     pub fn new<M: 'static + Material>(center: Point3, radius: f64, material: M) -> Self {
-        Self { center, radius , mat: Arc::new(material)}
+        Self {
+            center,
+            radius,
+            mat: Arc::new(material),
+        }
     }
 }
 

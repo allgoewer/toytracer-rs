@@ -7,15 +7,15 @@ mod material;
 mod ray;
 mod vec3;
 
-use rayon::prelude::*;
 use cam::CameraBuilder;
 use hit::{Hittable, Sphere};
 use material::{Dielectric, Lambertian, Metal};
 use rand::prelude::*;
 use ray::Ray;
+use rayon::prelude::*;
 use std::io;
-use std::thread;
 use std::sync::{self, atomic};
+use std::thread;
 use vec3::{Color, Point3};
 
 pub fn to_ppm<W: io::Write>(
@@ -106,9 +106,7 @@ fn main() -> std::io::Result<()> {
     ];
 
     // camera
-    let camera = &CameraBuilder::default()
-        .aspect_ratio(aspect_ratio)
-        .build();
+    let camera = &CameraBuilder::default().aspect_ratio(aspect_ratio).build();
 
     eprintln!("{:#?}", camera);
     eprintln!("Using {} raytracing threads", rayon::current_num_threads());
@@ -119,17 +117,15 @@ fn main() -> std::io::Result<()> {
     // status thread, prints number of remaining lines to be calculated
     let join_handle = thread::spawn({
         let counter = counter.clone();
-        move || {
-            loop {
-                let count = counter.load(atomic::Ordering::Relaxed);
-                eprintln!("{:4} lines remaining", count);
+        move || loop {
+            let count = counter.load(atomic::Ordering::Relaxed);
+            eprintln!("{:4} lines remaining", count);
 
-                if count <= 0 {
-                    break;
-                }
-
-                thread::sleep(std::time::Duration::from_millis(1_000));
+            if count <= 0 {
+                break;
             }
+
+            thread::sleep(std::time::Duration::from_millis(1_000));
         }
     });
 

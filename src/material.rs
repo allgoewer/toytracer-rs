@@ -1,7 +1,7 @@
-use rand::prelude::*;
 use crate::hit::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::{Color, Vec3};
+use rand::prelude::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Scatter {
@@ -30,9 +30,7 @@ pub struct Lambertian {
 
 impl Lambertian {
     pub fn new(albedo: Color) -> Self {
-        Self {
-            albedo,
-        }
+        Self { albedo }
     }
 }
 
@@ -72,7 +70,10 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, hr: &HitRecord) -> Option<Scatter> {
         let reflected = ray.direction().unit().reflect(hr.normal());
-        let scattered = Ray::new(hr.point(), reflected + self.fuzz * Vec3::random_in_unit_sphere());
+        let scattered = Ray::new(
+            hr.point(),
+            reflected + self.fuzz * Vec3::random_in_unit_sphere(),
+        );
 
         if scattered.direction().dot(hr.normal()) <= 0.0 {
             None
@@ -118,7 +119,9 @@ impl Material for Dielectric {
         let cos_theta = (-unit_direction).dot(hr.normal()).min(1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
-        let direction = if refraction_ratio * sin_theta > 1.0 || self.reflectance(cos_theta, refraction_ratio) > thread_rng().gen_range(0.0..1.0) {
+        let direction = if refraction_ratio * sin_theta > 1.0
+            || self.reflectance(cos_theta, refraction_ratio) > thread_rng().gen_range(0.0..1.0)
+        {
             unit_direction.reflect(hr.normal())
         } else {
             unit_direction.refract(hr.normal(), refraction_ratio)
