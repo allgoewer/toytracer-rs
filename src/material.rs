@@ -1,3 +1,4 @@
+use rand::prelude::*;
 use crate::hit::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::{Color, Vec3};
@@ -95,6 +96,14 @@ impl Dielectric {
             index_of_refraction,
         }
     }
+
+    fn reflectance(&self, cosine: f64, ref_idx: f64) -> f64 {
+        // Use Schlick's approximation for reflectance
+        let r0 = (1.0 - ref_idx) / (1.0 + ref_idx);
+        let r0 = r0 * r0;
+
+        r0 + (1.0 - r0) * (1.0 - cosine).powi(5)
+    }
 }
 
 impl Material for Dielectric {
@@ -109,7 +118,7 @@ impl Material for Dielectric {
         let cos_theta = (-unit_direction).dot(hr.normal()).min(1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
-        let direction = if refraction_ratio * sin_theta > 1.0 {
+        let direction = if refraction_ratio * sin_theta > 1.0 || self.reflectance(cos_theta, refraction_ratio) > thread_rng().gen_range(0.0..1.0) {
             unit_direction.reflect(hr.normal())
         } else {
             unit_direction.refract(hr.normal(), refraction_ratio)
