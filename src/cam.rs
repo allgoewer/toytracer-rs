@@ -3,17 +3,24 @@ use crate::vec3::{Point3, Vec3};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Camera {
+    lens_radius: f64,
     origin: Point3,
     horizontal: Vec3,
     vertical: Vec3,
+    u: Vec3,
+    v: Vec3,
+    w: Vec3,
     lower_left_corner: Point3,
 }
 
 impl Camera {
     pub fn get_ray(&self, u: f64, v: f64) -> Ray {
+        let rd = self.lens_radius * Vec3::random_in_unit_disk();
+        let offset = self.u * rd.x() + self.v * rd.y();
+
         Ray::new(
-            self.origin,
-            self.lower_left_corner + u * self.horizontal + v * self.vertical - self.origin,
+            self.origin + offset,
+            self.lower_left_corner + u * self.horizontal + v * self.vertical - self.origin - offset,
         )
     }
 }
@@ -22,6 +29,8 @@ impl Camera {
 pub struct CameraBuilder {
     vfov: f64,
     aspect_ratio: f64,
+    aperture: f64,
+    focus_dist: f64,
     look_from: Point3,
     look_at: Point3,
     vup: Vec3,
@@ -32,6 +41,8 @@ impl Default for CameraBuilder {
         Self {
             vfov: 90.0,
             aspect_ratio: 16.0 / 9.0,
+            aperture: 1.0,
+            focus_dist: 1.0,
             look_from: Point3::new(0.0, 0.0, 0.0),
             look_at: Point3::new(0.0, 0.0, 1.0),
             vup: Point3::new(0.0, 1.0, 0.0),
@@ -47,6 +58,16 @@ impl CameraBuilder {
 
     pub fn aspect_ratio(&mut self, aspect_ratio: f64) -> &mut Self {
         self.aspect_ratio = aspect_ratio;
+        self
+    }
+
+    pub fn aperture(&mut self, aperture: f64) -> &mut Self {
+        self.aperture = aperture;
+        self
+    }
+
+    pub fn focus_dist(&mut self, focus_dist: f64) -> &mut Self {
+        self.focus_dist = focus_dist;
         self
     }
 
@@ -76,14 +97,21 @@ impl CameraBuilder {
         let u = self.vup.cross(w).unit();
         let v = w.cross(u);
 
-        let horizontal = viewport_width * u;
-        let vertical = viewport_height * v;
+        let horizontal = self.focus_dist * viewport_width * u;
+        let vertical = self.focus_dist * viewport_height * v;
 
         Camera {
+            lens_radius: self.aperture / 2.0,
             origin: self.look_from,
             horizontal,
             vertical,
-            lower_left_corner: self.look_from - horizontal / 2.0 - vertical / 2.0 - w,
+            u,
+            v,
+            w,
+            lower_left_corner: self.look_from
+                - horizontal / 2.0
+                - vertical / 2.0
+                - self.focus_dist * w,
         }
     }
 }

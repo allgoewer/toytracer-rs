@@ -107,12 +107,17 @@ fn main() -> std::io::Result<()> {
     ];
 
     // camera
+    let look_from = Point3::new(3.0, 3.0, 2.0);
+    let look_at = Point3::new(0.0, 0.0, -1.0);
+
     let camera = &CameraBuilder::default()
-        .look_from(Point3::new(-2.0, 2.0, 1.0))
-        .look_at(Point3::new(0.0, 0.0, -1.0))
+        .look_from(look_from)
+        .look_at(look_at)
         .view_up(Vec3::new(0.0, 1.0, 0.0))
         .vertical_fov(20.0)
         .aspect_ratio(aspect_ratio)
+        .aperture(2.0)
+        .focus_dist((look_from - look_at).length())
         .build();
 
     eprintln!("{:#?}", camera);
