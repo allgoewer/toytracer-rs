@@ -20,8 +20,8 @@ impl Camera {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct CameraBuilder {
+    vfov: f64,
     aspect_ratio: f64,
-    viewport_height: f64,
     focal_length: f64,
     origin: Point3,
 }
@@ -29,8 +29,8 @@ pub struct CameraBuilder {
 impl Default for CameraBuilder {
     fn default() -> Self {
         Self {
+            vfov: 90.0,
             aspect_ratio: 16.0 / 9.0,
-            viewport_height: 2.0,
             focal_length: 1.0,
             origin: Point3::new(0.0, 0.0, 0.0),
         }
@@ -43,8 +43,8 @@ impl CameraBuilder {
         self
     }
 
-    pub fn viewport_height(&mut self, viewport_height: f64) -> &mut Self {
-        self.viewport_height = viewport_height;
+    pub fn vertical_fov(&mut self, vfov: f64) -> &mut Self {
+        self.vfov = vfov;
         self
     }
 
@@ -59,9 +59,13 @@ impl CameraBuilder {
     }
 
     pub fn build(&self) -> Camera {
-        let viewport_width = self.aspect_ratio * self.viewport_height;
+        let theta = self.vfov.to_radians();
+        let h = (theta / 2.0).tan();
+
+        let viewport_height = 2.0 * h;
+        let viewport_width = self.aspect_ratio * viewport_height;
         let horizontal = Vec3::new(viewport_width, 0.0, 0.0);
-        let vertical = Vec3::new(0.0, self.viewport_height, 0.0);
+        let vertical = Vec3::new(0.0, viewport_height, 0.0);
 
         Camera {
             origin: self.origin,

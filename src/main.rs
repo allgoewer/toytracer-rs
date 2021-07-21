@@ -89,24 +89,20 @@ fn main() -> std::io::Result<()> {
     let image_height = (image_width as f64 / aspect_ratio) as usize;
     let samples_per_pixel = 100;
     let max_depth = 50;
+    let radius = (std::f64::consts::PI / 4.0).cos();
 
     // world
 
-    let mat_ground = Lambertian::new(Color::new(0.8, 0.8, 0.0));
-    let mat_center = Lambertian::new(Color::new(0.1, 0.2, 0.5));
-    let mat_left = Dielectric::new(1.5);
-    let mat_right = Metal::new(Color::new(0.8, 0.6, 0.2), 0.0);
+    let mat_left = Lambertian::new(Color::new(0.0, 0.0, 1.0));
+    let mat_right = Lambertian::new(Color::new(1.0, 0.0, 0.0));
 
     let world = vec![
-        Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, mat_ground),
-        Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center),
-        Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, mat_left.clone()),
-        Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.4, mat_left),
-        Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, mat_right),
+        Sphere::new(Point3::new(-radius, 0.0, -1.0), radius, mat_left),
+        Sphere::new(Point3::new(radius, 0.0, -1.0), radius, mat_right),
     ];
 
     // camera
-    let camera = &CameraBuilder::default().aspect_ratio(aspect_ratio).build();
+    let camera = &CameraBuilder::default().vertical_fov(90.0).aspect_ratio(aspect_ratio).build();
 
     eprintln!("{:#?}", camera);
     eprintln!("Using {} raytracing threads", rayon::current_num_threads());
