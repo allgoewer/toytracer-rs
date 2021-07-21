@@ -100,7 +100,8 @@ fn main() -> std::io::Result<()> {
     let world = vec![
         Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, mat_ground),
         Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center),
-        Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, mat_left),
+        Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, mat_left.clone()),
+        Sphere::new(Point3::new(-1.0, 0.0, -1.0), -0.4, mat_left),
         Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, mat_right),
     ];
 
