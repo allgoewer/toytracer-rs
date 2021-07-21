@@ -56,6 +56,17 @@ impl Vec3 {
         Self::random_in_unit_sphere().unit()
     }
 
+    /// Calculates whether self is near zero
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        return self.0.abs() < s && self.1.abs() < s && self.2.abs() < s;
+    }
+
+    /// Reflect self on the given normal unit vector
+    pub fn reflect(&self, normal: Vec3) -> Self {
+        *self - 2.0 * self.dot(normal) * normal
+    }
+
     /// Write the vector to a [`io::Write`]r
     pub fn write<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         writeln!(w, "{} {} {}", self.0, self.1, self.2)
@@ -140,6 +151,22 @@ impl ops::SubAssign for Vec3 {
         self.0 -= rhs.0;
         self.1 -= rhs.1;
         self.2 -= rhs.2;
+    }
+}
+
+impl ops::Mul for Vec3 {
+    type Output = Self;
+
+    fn mul(self, rhs: Self::Output) -> Self::Output {
+        Self(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2)
+    }
+}
+
+impl ops::MulAssign for Vec3 {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.0 *= rhs.0;
+        self.1 *= rhs.1;
+        self.2 *= rhs.2;
     }
 }
 

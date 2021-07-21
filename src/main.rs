@@ -3,18 +3,20 @@
 
 mod cam;
 mod hit;
+mod material;
 mod ray;
 mod vec3;
 
 use rayon::prelude::*;
 use cam::CameraBuilder;
 use hit::{Hittable, Sphere};
+use material::{Lambertian, Metal};
 use rand::prelude::*;
 use ray::Ray;
 use std::io;
 use std::thread;
 use std::sync::{self, atomic};
-use vec3::{Color, Point3, Vec3};
+use vec3::{Color, Point3};
 
 pub fn to_ppm<W: io::Write>(
     w: &mut W,
@@ -54,9 +56,11 @@ fn ray_color<H: Hittable>(ray: &Ray, world: H, depth: u32) -> Color {
     }
 
     if let Some(hr) = world.hit(&ray, 0.001, f64::INFINITY) {
-        let point = hr.point();
-        let target = point + hr.normal() + Vec3::random_unit_vector();
-        0.5 * ray_color(&Ray::new(point, target - point), world, depth - 1)
+        if let Some(scatter) = hr.mat().scatter(ray, &hr) {
+            scatter.attenuation() * ray_color(scatter.scattered(), world, depth - 1)
+        } else {
+            Color::new(0.0, 0.0, 0.0)
+        }
     } else {
         let unit_direction = ray.direction().unit();
         let t = 0.5 * (unit_direction.y() + 1.0);
@@ -87,9 +91,17 @@ fn main() -> std::io::Result<()> {
     let max_depth = 50;
 
     // world
+
+    let mat_ground = Lambertian::new(Color::new(0.8, 0.8, 0.0));
+    let mat_center = Lambertian::new(Color::new(0.7, 0.3, 0.3));
+    let mat_left = Metal::new(Color::new(0.8, 0.8, 0.8), 0.3);
+    let mat_right = Metal::new(Color::new(0.8, 0.6, 0.2), 1.0);
+
     let world = vec![
-        Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5),
-        Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0),
+        Sphere::new(Point3::new(0.0, -100.5, -1.0), 100.0, mat_ground),
+        Sphere::new(Point3::new(0.0, 0.0, -1.0), 0.5, mat_center),
+        Sphere::new(Point3::new(-1.0, 0.0, -1.0), 0.5, mat_left),
+        Sphere::new(Point3::new(1.0, 0.0, -1.0), 0.5, mat_right),
     ];
 
     // camera
