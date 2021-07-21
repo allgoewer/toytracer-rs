@@ -143,6 +143,22 @@ impl ops::SubAssign for Vec3 {
     }
 }
 
+impl ops::Mul for Vec3 {
+    type Output = Self;
+
+    fn mul(self, rhs: Self::Output) -> Self::Output {
+        Self(self.0 * rhs.0, self.1 * rhs.1, self.2 * rhs.2)
+    }
+}
+
+impl ops::MulAssign for Vec3 {
+    fn mul_assign(&mut self, rhs: Self) {
+        self.0 *= rhs.0;
+        self.1 *= rhs.1;
+        self.2 *= rhs.2;
+    }
+}
+
 impl ops::Mul<Vec3> for f64 {
     type Output = Vec3;
 
