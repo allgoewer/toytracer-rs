@@ -56,6 +56,11 @@ impl Vec3 {
         Self::random_in_unit_sphere().unit()
     }
 
+    /// Calculates whether self is near zero
+    pub fn near_zero(&self) -> bool {
+        let s = 1e-8;
+        return self.0.abs() < s && self.1.abs() < s && self.2.abs() < s;
+    }
     /// Write the vector to a [`io::Write`]r
     pub fn write<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
         writeln!(w, "{} {} {}", self.0, self.1, self.2)
