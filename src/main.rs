@@ -89,7 +89,6 @@ fn main() -> std::io::Result<()> {
     let image_height = (image_width as f64 / aspect_ratio) as usize;
     let samples_per_pixel = 100;
     let max_depth = 50;
-    let radius = (std::f64::consts::PI / 4.0).cos();
 
     // world
 
