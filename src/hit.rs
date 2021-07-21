@@ -36,6 +36,10 @@ impl HitRecord {
         self.t
     }
 
+    pub fn front_face(&self) -> bool {
+        self.front_face
+    }
+
     pub fn mat(&self) -> &dyn Material {
         &*self.mat
     }
