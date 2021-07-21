@@ -1,12 +1,15 @@
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
+use crate::material::Material;
+use std::sync::Arc;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct HitRecord {
     point: Point3,
     normal: Vec3,
     t: f64,
     front_face: bool,
+    mat: Arc<dyn Material>,
 }
 
 impl HitRecord {
@@ -32,6 +35,10 @@ impl HitRecord {
     pub fn t(&self) -> f64 {
         self.t
     }
+
+    pub fn mat(&self) -> &dyn Material {
+        &*self.mat
+    }
 }
 
 impl<H: Hittable> Hittable for &[H] {
@@ -54,15 +61,16 @@ pub trait Hittable {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord>;
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Sphere {
     center: Point3,
     radius: f64,
+    mat: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64) -> Self {
-        Self { center, radius }
+    pub fn new<M: 'static + Material>(center: Point3, radius: f64, material: M) -> Self {
+        Self { center, radius , mat: Arc::new(material)}
     }
 }
 
@@ -99,6 +107,7 @@ impl Hittable for Sphere {
             normal,
             t,
             front_face,
+            mat: self.mat.clone(),
         })
     }
 }
