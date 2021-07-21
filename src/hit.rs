@@ -1,18 +1,17 @@
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::{Point3, Vec3};
-use std::sync::Arc;
 
 #[derive(Clone, Debug)]
-pub struct HitRecord {
+pub struct HitRecord<'mat> {
     point: Point3,
     normal: Vec3,
     t: f64,
     front_face: bool,
-    mat: Arc<dyn Material>,
+    mat: &'mat dyn Material,
 }
 
-impl HitRecord {
+impl<'mat> HitRecord<'mat> {
     pub fn face_normal(ray: &Ray, outward_normal: Vec3) -> (bool, Vec3) {
         let front_face = ray.direction().dot(outward_normal) < 0.0;
         let normal = if front_face {
@@ -66,23 +65,23 @@ pub trait Hittable {
 }
 
 #[derive(Clone, Debug)]
-pub struct Sphere {
+pub struct Sphere<'mat> {
     center: Point3,
     radius: f64,
-    mat: Arc<dyn Material>,
+    mat: &'mat dyn Material,
 }
 
-impl Sphere {
-    pub fn new<M: 'static + Material>(center: Point3, radius: f64, material: M) -> Self {
+impl<'mat> Sphere<'mat> {
+    pub fn new(center: Point3, radius: f64, material: &'mat dyn Material) -> Self {
         Self {
             center,
             radius,
-            mat: Arc::new(material),
+            mat: material,
         }
     }
 }
 
-impl Hittable for Sphere {
+impl Hittable for Sphere<'_> {
     fn hit(&self, ray: &Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
         let oc = ray.origin() - self.center;
         let a = ray.direction().length_squared();
