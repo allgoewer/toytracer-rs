@@ -59,7 +59,7 @@ impl Vec3 {
     /// Calculates whether self is near zero
     pub fn near_zero(&self) -> bool {
         let s = 1e-8;
-        return self.0.abs() < s && self.1.abs() < s && self.2.abs() < s;
+        self.0.abs() < s && self.1.abs() < s && self.2.abs() < s
     }
 
     /// Reflect self on the given normal unit vector
