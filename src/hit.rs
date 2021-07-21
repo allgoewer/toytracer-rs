@@ -114,7 +114,7 @@ impl Hittable for Sphere<'_> {
             normal,
             t,
             front_face,
-            mat: self.mat.clone(),
+            mat: self.mat,
         })
     }
 }
