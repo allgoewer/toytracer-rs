@@ -87,7 +87,7 @@ fn main() -> std::io::Result<()> {
 
     // image
     let aspect_ratio = 16.0 / 9.0;
-    let image_width = 1200;
+    let image_width = 1920;
     let image_height = (image_width as f64 / aspect_ratio) as usize;
     let samples_per_pixel = 10;
     let max_depth = 50;
