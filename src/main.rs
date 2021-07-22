@@ -14,7 +14,7 @@ use rand::prelude::*;
 use ray::Ray;
 use rayon::prelude::*;
 use std::io;
-use std::sync::{self, atomic, Arc};
+use std::sync::{self, atomic};
 use std::thread;
 use vec3::{Color, Point3, Vec3};
 
@@ -94,7 +94,7 @@ fn main() -> std::io::Result<()> {
 
     // generate a random world
 
-    let material_ground = Arc::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
+    let material_ground = Box::new(Lambertian::new(Color::new(0.5, 0.5, 0.5)));
 
     let mut world = vec![Sphere::new(
         Point3::new(0.0, -1000.0, 0.0),
@@ -117,19 +117,19 @@ fn main() -> std::io::Result<()> {
                     _ if choose_mat < 0.8 => {
                         // diffuse
                         let albedo = Color::random() * Color::random();
-                        let material = Arc::new(Lambertian::new(albedo));
+                        let material = Box::new(Lambertian::new(albedo));
                         world.push(Sphere::new(center, 0.2, material));
                     }
                     _ if choose_mat < 0.95 => {
                         // metal
                         let albedo = Color::random_range(0.5..1.0);
                         let fuzz = rng.gen_range(0.0..0.5);
-                        let material = Arc::new(Metal::new(albedo, fuzz));
+                        let material = Box::new(Metal::new(albedo, fuzz));
                         world.push(Sphere::new(center, 0.2, material));
                     }
                     _ => {
                         // glass
-                        let material = Arc::new(Dielectric::new(1.5));
+                        let material = Box::new(Dielectric::new(1.5));
                         world.push(Sphere::new(center, 0.2, material));
                     }
                 }
@@ -137,9 +137,9 @@ fn main() -> std::io::Result<()> {
         }
     }
 
-    let material1 = Arc::new(Dielectric::new(1.5));
-    let material2 = Arc::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
-    let material3 = Arc::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
+    let material1 = Box::new(Dielectric::new(1.5));
+    let material2 = Box::new(Lambertian::new(Color::new(0.4, 0.2, 0.1)));
+    let material3 = Box::new(Metal::new(Color::new(0.7, 0.6, 0.5), 0.0));
 
     world.push(Sphere::new(Point3::new(0.0, 1.0, 0.0), 1.0, material1));
     world.push(Sphere::new(Point3::new(-4.0, 1.0, 0.0), 1.0, material2));
