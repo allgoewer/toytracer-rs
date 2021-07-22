@@ -8,7 +8,7 @@ pub struct HitRecord<'mat> {
     normal: Vec3,
     t: f64,
     front_face: bool,
-    mat: &'mat dyn Material,
+    mat: &'mat Material,
 }
 
 impl HitRecord<'_> {
@@ -39,7 +39,7 @@ impl HitRecord<'_> {
         self.front_face
     }
 
-    pub fn mat(&self) -> &dyn Material {
+    pub fn mat(&self) -> &Material {
         &*self.mat
     }
 }
@@ -68,11 +68,11 @@ pub trait Hittable {
 pub struct Sphere {
     center: Point3,
     radius: f64,
-    mat: Box<dyn Material>,
+    mat: Material,
 }
 
 impl Sphere {
-    pub fn new(center: Point3, radius: f64, material: Box<dyn Material>) -> Self {
+    pub fn new(center: Point3, radius: f64, material: Material) -> Self {
         Self {
             center,
             radius,
@@ -114,7 +114,7 @@ impl Hittable for Sphere {
             normal,
             t,
             front_face,
-            mat: &*self.mat,
+            mat: &self.mat,
         })
     }
 }
