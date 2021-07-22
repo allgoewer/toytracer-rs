@@ -86,10 +86,10 @@ fn main() -> std::io::Result<()> {
     let mut rng = thread_rng();
 
     // image
-    let aspect_ratio = 3.0 / 2.0;
+    let aspect_ratio = 16.0 / 9.0;
     let image_width = 1920;
     let image_height = (image_width as f64 / aspect_ratio) as usize;
-    let samples_per_pixel = 500;
+    let samples_per_pixel = 10;
     let max_depth = 50;
 
     // generate a random world
