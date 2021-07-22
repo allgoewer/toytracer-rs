@@ -9,7 +9,7 @@ mod vec3;
 
 use cam::CameraBuilder;
 use hit::{Hittable, Sphere};
-use material::{Dielectric, Lambertian, Metal};
+use material::{Dielectric, Lambertian, Material, Metal};
 use rand::prelude::*;
 use ray::Ray;
 use rayon::prelude::*;
@@ -113,26 +113,25 @@ fn main() -> std::io::Result<()> {
             );
 
             if (center - Point3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                match choose_mat {
+                let material: Box<dyn Material> = match choose_mat {
                     _ if choose_mat < 0.8 => {
                         // diffuse
                         let albedo = Color::random() * Color::random();
-                        let material = Box::new(Lambertian::new(albedo));
-                        world.push(Sphere::new(center, 0.2, material));
+                        Box::new(Lambertian::new(albedo))
                     }
                     _ if choose_mat < 0.95 => {
                         // metal
                         let albedo = Color::random_range(0.5..1.0);
                         let fuzz = rng.gen_range(0.0..0.5);
-                        let material = Box::new(Metal::new(albedo, fuzz));
-                        world.push(Sphere::new(center, 0.2, material));
+                        Box::new(Metal::new(albedo, fuzz))
                     }
                     _ => {
                         // glass
-                        let material = Box::new(Dielectric::new(1.5));
-                        world.push(Sphere::new(center, 0.2, material));
+                        Box::new(Dielectric::new(1.5))
                     }
-                }
+                };
+
+                world.push(Sphere::new(center, 0.2, material));
             }
         }
     }
